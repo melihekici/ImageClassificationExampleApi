@@ -7,16 +7,25 @@ import subprocess
 import json
 import time
 import os
+import tensorflow
+import keras
+from PIL import Image
+import numpy as np
+from keras.models import load_model
+from flask_cors import CORS
 
 app = Flask(__name__)
 
 api = Api(app)
+#api = CORS(app)
 
 client = MongoClient("mongodb://db:27017")
 
 db = client.ImageRecognition
 
 users = db["Users"]
+
+model = load_model("modelv3.6.h5")
 
 def userExist(username):
     if (users.find({"username":username}).count() == 0):
@@ -183,9 +192,21 @@ class Refill(Resource):
         else:
             return 200
 
+class Classify2(Resource):
+    def post(self):
+        img = Image.open(request.files['image']).resize((224,224),0)
+        img = np.array(img).reshape(1,224,224,3)
+        pred = model.predict(img).argmax()
+        prediction = ["Adult", "Normal", "Violence"][pred]
+        # prediction = "Adult" if  pred == 0 else ("Normal" if pred == 1 else "Violence") 
+        return jsonify({
+            "files": prediction
+        })
+
 api.add_resource(Register, "/Register")
 api.add_resource(Classify, "/Classify")
 api.add_resource(Refill, "/refill")
+api.add_resource(Classify2, "/classify")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0")

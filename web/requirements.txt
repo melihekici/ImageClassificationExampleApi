@@ -5,3 +5,6 @@ bcrypt
 numpy
 requests
 tensorflow
+keras
+pillow
+flask-cors
