@@ -195,7 +195,7 @@ class Refill(Resource):
 class Classify2(Resource):
     def post(self):
         img = Image.open(request.files['image']).resize((224,224),0)
-        img = np.array(img).reshape(1,224,224,3)
+        img = (np.array(img)/255.).reshape(1,224,224,3)
         pred = model.predict(img).argmax()
         prediction = ["Adult", "Normal", "Violence"][pred]
         # prediction = "Adult" if  pred == 0 else ("Normal" if pred == 1 else "Violence") 
